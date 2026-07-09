@@ -3,7 +3,7 @@
 
 Consulta el endpoint JSON del producto (`<url-producto>.js`), que expone un
 campo `available` por variante. Mientras el producto esté disponible, en cada
-comprobación envía NOTIFY_REPEAT mensajes seguidos por Telegram (5 por defecto),
+comprobación envía NOTIFY_REPEAT mensajes seguidos por Telegram (10 por defecto),
 y deja de avisar cuando vuelve a agotarse.
 """
 import json
@@ -33,9 +33,9 @@ CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 # Cuántos mensajes seguidos enviar en cada comprobación mientras esté disponible.
 try:
-    NOTIFY_REPEAT = max(1, int(os.environ.get("NOTIFY_REPEAT", "5")))
+    NOTIFY_REPEAT = max(1, int(os.environ.get("NOTIFY_REPEAT", "10")))
 except ValueError:
-    NOTIFY_REPEAT = 5
+    NOTIFY_REPEAT = 10
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; dwcbot/1.0)",
@@ -103,7 +103,7 @@ def send_test_message():
     body = (
         "🔔 <b>Prueba de dwcbot</b>\n\n"
         "Si recibes esto, ¡las notificaciones funcionan! ✅\n"
-        "Cuando el reloj esté disponible te llegarán así, 5 seguidas.\n\n"
+        "Cuando el reloj esté disponible te llegarán así, 10 seguidas.\n\n"
         f'👉 <a href="{PRODUCT_URL}">Ver el producto</a>'
     )
     sent = 0
