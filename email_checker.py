@@ -21,15 +21,18 @@ from email import message_from_bytes
 from email.header import decode_header, make_header
 
 # --- Configuración (variables de entorno) ---
-IMAP_HOST = os.environ.get("IMAP_HOST", "imap.gmail.com")
-IMAP_PORT = int(os.environ.get("IMAP_PORT", "993"))
+# Se usa "or default" (no get(k, default)) para que un secreto vacío en GitHub
+# no pise el valor por defecto.
+IMAP_HOST = os.environ.get("IMAP_HOST") or "imap.gmail.com"
+IMAP_PORT = int(os.environ.get("IMAP_PORT") or "993")
 IMAP_USER = os.environ.get("IMAP_USER")
 IMAP_PASSWORD = os.environ.get("IMAP_PASSWORD")
 
-# Buzones a revisar. En Gmail el spam es "[Gmail]/Spam" (por si el newsletter
-# cae ahí). Los que no existan se ignoran sin fallar.
-MAILBOXES = [m.strip() for m in os.environ.get(
-    "IMAP_MAILBOXES", "INBOX,[Gmail]/Spam").split(",") if m.strip()]
+# Buzones a revisar. Por defecto la bandeja de entrada y el spam de Gmail; para
+# otros proveedores añade su carpeta de spam en IMAP_MAILBOXES (p. ej. "Junk").
+# Los buzones que no existan se ignoran sin fallar.
+MAILBOXES = [m.strip() for m in (os.environ.get("IMAP_MAILBOXES")
+             or "INBOX,[Gmail]/Spam").split(",") if m.strip()]
 
 # Filtro opcional por remitente (subcadena). Vacío = avisar de cualquier correo
 # nuevo (recomendado en una cuenta dedicada, para no perderse el aviso aunque el

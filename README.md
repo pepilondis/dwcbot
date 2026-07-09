@@ -48,34 +48,46 @@ Telegram cuando llega un email (por ejemplo, el newsletter de Delhi Watch
 anunciando disponibilidad). Lo gestiona `email_checker.py` vía IMAP.
 
 Queda **inactivo** hasta que añadas los secretos `IMAP_USER` e `IMAP_PASSWORD`;
-sin ellos, el paso no hace nada (no falla).
+sin ellos, el paso no hace nada (no falla). Funciona con **cualquier proveedor
+IMAP** (Gmail, Outlook, Yahoo, iCloud, Zoho, GMX…), no solo Gmail.
 
-### Configuración (con una cuenta de Gmail DEDICADA — recomendado)
+### Configuración (usa una cuenta DEDICADA — recomendado)
 
-1. **Crea una cuenta de Gmail nueva** usada solo para esto (no tu correo
+1. **Crea una cuenta de correo nueva** usada solo para esto (no tu correo
    personal). Así, aunque la contraseña se filtrara, no afecta a tu correo real.
 2. **Suscríbete al newsletter** de Delhi Watch Company con esa cuenta.
-3. En esa cuenta, activa la **verificación en 2 pasos**
-   (myaccount.google.com → Seguridad).
-4. Genera una **contraseña de aplicación**
-   (myaccount.google.com/apppasswords) — son 16 caracteres. Esta es la que usa
-   el bot, no tu contraseña normal.
-5. En GitHub → *Settings → Secrets and variables → Actions*, añade:
+3. Consigue una **contraseña para IMAP**. En casi todos los proveedores conviene
+   activar la verificación en 2 pasos y generar una **contraseña de aplicación**
+   (no tu contraseña normal). En algunos (GMX, Zoho) basta con activar IMAP.
+4. En GitHub → *Settings → Secrets and variables → Actions*, añade:
 
-   | Secreto         | Valor                                   |
-   | --------------- | --------------------------------------- |
-   | `IMAP_USER`     | la dirección del Gmail dedicado         |
-   | `IMAP_PASSWORD` | la contraseña de aplicación (16 letras) |
+   | Secreto         | Valor                                                   |
+   | --------------- | ------------------------------------------------------- |
+   | `IMAP_USER`     | la dirección de correo dedicada                         |
+   | `IMAP_PASSWORD` | la contraseña de aplicación / IMAP                      |
+   | `IMAP_HOST`     | el servidor IMAP del proveedor (ver tabla; Gmail no lo necesita) |
 
-A partir de ahí, cada 5 minutos el bot revisa el buzón (bandeja de entrada y
-spam) y te avisa por Telegram de cada correo nuevo con su remitente y asunto,
-marcándolo como leído para no repetir.
+A partir de ahí, cada 5 minutos el bot revisa el buzón y te avisa por Telegram
+de cada correo nuevo con su remitente y asunto, marcándolo como leído.
 
-### Ajustes opcionales (variables de entorno)
+### Servidor IMAP según proveedor (`IMAP_HOST`)
 
+| Proveedor        | `IMAP_HOST`               | Carpeta de spam (`IMAP_MAILBOXES`) |
+| ---------------- | ------------------------- | ---------------------------------- |
+| Gmail (defecto)  | `imap.gmail.com`          | `INBOX,[Gmail]/Spam`               |
+| Outlook / Hotmail| `outlook.office365.com`   | `INBOX,Junk`                       |
+| Yahoo            | `imap.mail.yahoo.com`     | `INBOX,Bulk Mail`                  |
+| iCloud           | `imap.mail.me.com`        | `INBOX,Junk`                       |
+| Zoho             | `imap.zoho.com` (o `.eu`) | `INBOX,Spam`                       |
+| GMX              | `imap.gmx.com`            | `INBOX,Spam`                       |
+
+### Ajustes opcionales (variables de entorno / secretos)
+
+- `IMAP_HOST`: servidor IMAP (por defecto `imap.gmail.com`).
+- `IMAP_MAILBOXES`: buzones a revisar (por defecto `INBOX,[Gmail]/Spam`). Para
+  otros proveedores usa la carpeta de spam de la tabla.
 - `EMAIL_FROM_FILTER`: si recibes ruido, ponlo a `delhiwatch` para avisar solo de
   correos de ese remitente. Por defecto (vacío) avisa de cualquier correo nuevo.
-- `IMAP_MAILBOXES`: buzones a revisar (por defecto `INBOX,[Gmail]/Spam`).
 
 ---
 

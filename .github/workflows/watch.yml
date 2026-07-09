@@ -51,6 +51,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           IMAP_USER: ${{ secrets.IMAP_USER }}
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
+          # Opcionales: para proveedores distintos de Gmail (Outlook, Yahoo, etc.)
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_MAILBOXES: ${{ secrets.IMAP_MAILBOXES }}
         run: python email_checker.py
 
       # Se ejecuta SIEMPRE (aunque un paso anterior falle) para que los contadores
