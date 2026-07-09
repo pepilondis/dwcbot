@@ -37,8 +37,8 @@ try:
 except ValueError:
     NOTIFY_REPEAT = 10
 
-# Tras cuántos fallos SEGUIDOS al consultar la web avisamos y ponemos el job en
-# rojo (para que GitHub mande email). 3 fallos ≈ 15 min de web caída/bloqueada.
+# Tras cuántos fallos SEGUIDOS al consultar la web enviamos UN aviso por Telegram.
+# 3 fallos ≈ 15 min de web caída/bloqueada (evita avisar por cortes puntuales).
 try:
     FAIL_THRESHOLD = max(1, int(os.environ.get("FAIL_THRESHOLD", "3")))
 except ValueError:
@@ -159,15 +159,15 @@ def main():
         print(f"No se pudo consultar la web (fallo {fail_streak}): {e}", file=sys.stderr)
         # Guardamos el contador y conservamos el último estado conocido.
         save_state({"available": prev, "title": state.get("title", ""), "fail_streak": fail_streak})
-        # Al alcanzar el umbral, avisamos por Telegram (una vez) y ponemos el job
-        # en rojo para que GitHub mande el email de fallo.
+        # Al alcanzar el umbral, avisamos por Telegram UNA sola vez. El job termina
+        # en verde (no usamos el email de GitHub): todo el aviso va por Telegram.
         if fail_streak == FAIL_THRESHOLD:
             send_telegram(
                 "⚠️ <b>dwcbot</b>: no consigo consultar la web "
                 f"({fail_streak} intentos fallidos seguidos). Puede ser un problema "
                 "temporal, pero conviene revisar el bot."
             )
-        return 1 if fail_streak >= FAIL_THRESHOLD else 0
+        return 0
 
     # Consulta correcta → reiniciamos el contador de fallos.
     available = bool(product.get("available"))
