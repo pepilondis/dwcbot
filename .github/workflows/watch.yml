@@ -5,6 +5,9 @@ on:
     # Cada 5 minutos (en hora UTC). Es el mínimo que permite GitHub; además puede
     # retrasar los cron unos minutos cuando hay mucha carga.
     - cron: "*/5 * * * *"
+    # Latido diario a las 08:00 UTC = 10:00 en España (horario de verano; en
+    # invierno llegará a las 09:00 porque el cron de GitHub va siempre en UTC).
+    - cron: "0 8 * * *"
   workflow_dispatch: # permite lanzarlo manualmente desde la pestaña Actions
     inputs:
       test:
@@ -36,16 +39,25 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SEND_TEST: ${{ inputs.test }}
+          # true solo en la ejecución del cron del latido diario (10:00 España)
+          HEARTBEAT: ${{ github.event.schedule == '0 8 * * *' }}
         run: python checker.py
 
+      # Se ejecuta SIEMPRE (aunque el paso anterior falle) para que el contador
+      # de errores (fail_streak) se guarde entre ejecuciones. Reintenta el push
+      # con rebase para evitar choques cuando dos ejecuciones coinciden.
       - name: Guardar estado si cambió
+        if: always()
         run: |
           if ! git diff --quiet state.json; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add state.json
             git commit -m "chore: actualizar estado de disponibilidad [skip ci]"
-            git push
+            for i in 1 2 3; do
+              git pull --rebase --autostash origin main && git push && break
+              echo "reintentando push ($i)..."; sleep 3
+            done
           else
             echo "Sin cambios de estado."
           fi

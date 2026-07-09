@@ -6,9 +6,10 @@ Bot de Telegram que te avisa cuando un producto de [Delhi Watch Company](https:/
 Producto vigilado por defecto:
 [**DWC Terra**](https://delhiwatchcompany.com/collections/mens-watches/products/dwc-terra).
 
-Funciona con **GitHub Actions** (gratis): un cron revisa la web cada 15 minutos y,
-**solo cuando el producto pasa de agotado a disponible**, te envía un mensaje por
-Telegram. No hay que dejar nada encendido en tu ordenador.
+Funciona con **GitHub Actions** (gratis): un cron revisa la web cada 5 minutos y,
+**mientras el producto esté disponible**, te envía 10 mensajes seguidos por
+Telegram en cada comprobación (hasta que se agote). No hay que dejar nada
+encendido en tu ordenador.
 
 ---
 
@@ -17,9 +18,25 @@ Telegram. No hay que dejar nada encendido en tu ordenador.
 - `checker.py` consulta el JSON del producto (`.../dwc-terra.js`), que Shopify
   expone con el campo `available` de cada variante. Usa solo la librería estándar
   de Python (sin dependencias que instalar).
-- Compara con el estado guardado en `state.json`. Si antes estaba agotado y ahora
-  está disponible, envía el aviso por Telegram y actualiza `state.json`.
-- El workflow `.github/workflows/watch.yml` lo ejecuta con un cron cada 15 min.
+- Mientras esté disponible, en **cada** comprobación envía `NOTIFY_REPEAT` mensajes
+  (10 por defecto) y deja de avisar cuando vuelve a agotarse.
+- El workflow `.github/workflows/watch.yml` lo ejecuta con un cron cada 5 min.
+
+### Salvaguardas de fiabilidad
+
+- **🫀 Latido diario**: cada día a las **10:00 (hora de España)** te llega un
+  mensaje confirmando que el bot sigue vivo e indicando el estado actual. Si un día
+  no llega, es señal de que algo va mal. También mantiene activo el cron (GitHub
+  desactiva los workflows programados tras 60 días sin actividad en el repo).
+- **🚨 Aviso de error**: si la web falla `FAIL_THRESHOLD` veces seguidas (3 por
+  defecto, ~15 min), te avisa por Telegram de que no puede consultarla.
+- **📧 Email de GitHub**: ante ese fallo persistente el workflow termina en rojo,
+  y GitHub te envía un email automático (revisa que tengas activadas las
+  notificaciones de Actions en *Settings → Notifications*).
+
+> Nota sobre la hora: el cron de GitHub va en UTC y no ajusta el cambio de hora,
+> así que el latido llega a las 10:00 en horario de verano y a las 09:00 en
+> invierno.
 
 ---
 
