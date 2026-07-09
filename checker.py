@@ -147,6 +147,16 @@ def main():
     if os.environ.get("SEND_TEST", "").strip().lower() in ("1", "true", "yes"):
         return send_test_message()
 
+    # Prueba manual del aviso de error (no consulta la web).
+    if os.environ.get("ERROR_TEST", "").strip().lower() in ("1", "true", "yes"):
+        send_telegram(
+            "⚠️ <b>dwcbot</b>: no consigo consultar la web "
+            "(3 intentos fallidos seguidos). Puede ser un problema temporal, "
+            "pero conviene revisar el bot.\n\n<i>(Este es un mensaje de PRUEBA.)</i>"
+        )
+        print("Aviso de error de prueba enviado.")
+        return 0
+
     heartbeat = os.environ.get("HEARTBEAT", "").strip().lower() in ("1", "true", "yes")
     state = load_state()
     prev = bool(state.get("available", False))

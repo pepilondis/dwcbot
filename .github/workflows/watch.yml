@@ -11,7 +11,15 @@ on:
   workflow_dispatch: # permite lanzarlo manualmente desde la pestaña Actions
     inputs:
       test:
-        description: "Enviar un mensaje de prueba a Telegram (sin comprobar stock)"
+        description: "Enviar los mensajes de prueba de disponibilidad (10)"
+        type: boolean
+        default: false
+      heartbeat:
+        description: "Enviar un latido de prueba"
+        type: boolean
+        default: false
+      error_test:
+        description: "Enviar un aviso de error de prueba"
         type: boolean
         default: false
 
@@ -39,8 +47,9 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SEND_TEST: ${{ inputs.test }}
-          # true solo en la ejecución del cron del latido diario (10:00 España)
-          HEARTBEAT: ${{ github.event.schedule == '0 8 * * *' }}
+          # true en el cron del latido diario (10:00 España) o si se pide a mano
+          HEARTBEAT: ${{ github.event.schedule == '0 8 * * *' || inputs.heartbeat }}
+          ERROR_TEST: ${{ inputs.error_test }}
         run: python checker.py
 
       # Vigilancia del newsletter por correo. Queda inactivo mientras no existan
