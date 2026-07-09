@@ -2,12 +2,14 @@
 """Vigila la disponibilidad de un producto Shopify y avisa por Telegram.
 
 Consulta el endpoint JSON del producto (`<url-producto>.js`), que expone un
-campo `available` por variante. Solo envía notificación cuando el producto
-pasa de "agotado" a "disponible" (comparando con el estado guardado).
+campo `available` por variante. Mientras el producto esté disponible, en cada
+comprobación envía NOTIFY_REPEAT mensajes seguidos por Telegram (5 por defecto),
+y deja de avisar cuando vuelve a agotarse.
 """
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -28,6 +30,12 @@ PRODUCT_URL = os.environ.get(
 STATE_FILE = os.environ.get("STATE_FILE", "state.json")
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
+# Cuántos mensajes seguidos enviar en cada comprobación mientras esté disponible.
+try:
+    NOTIFY_REPEAT = max(1, int(os.environ.get("NOTIFY_REPEAT", "5")))
+except ValueError:
+    NOTIFY_REPEAT = 5
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; dwcbot/1.0)",
@@ -124,15 +132,26 @@ def main():
         f"ahora: {'disponible' if available else 'agotado'}"
     )
 
-    if available and not prev:
-        lines = [f"🟢 <b>¡{title} ya está disponible!</b>", ""]
+    # Mientras esté disponible, avisamos en CADA comprobación (no solo al cambiar),
+    # enviando NOTIFY_REPEAT mensajes seguidos para que no pase desapercibido.
+    if available:
+        base = [f"🟢 <b>¡{title} ya está disponible!</b>", ""]
         for v in available_variants:
-            lines.append(f"• {v.get('title', 'Variante')} — {format_price(v.get('price', 0))}")
+            base.append(f"• {v.get('title', 'Variante')} — {format_price(v.get('price', 0))}")
         if available_variants:
-            lines.append("")
-        lines.append(f'👉 <a href="{PRODUCT_URL}">Comprar ahora</a>')
-        if send_telegram("\n".join(lines)):
-            print("Notificación enviada.")
+            base.append("")
+        base.append(f'👉 <a href="{PRODUCT_URL}">Comprar ahora</a>')
+        body = "\n".join(base)
+
+        sent = 0
+        for i in range(1, NOTIFY_REPEAT + 1):
+            # Numeramos cada mensaje para que Telegram no los agrupe y se distingan.
+            text = f"({i}/{NOTIFY_REPEAT})\n{body}"
+            if send_telegram(text):
+                sent += 1
+            if i < NOTIFY_REPEAT:
+                time.sleep(1)  # pequeña pausa para no saturar la API de Telegram
+        print(f"Disponible: enviados {sent}/{NOTIFY_REPEAT} mensajes.")
 
     save_state({"available": available, "title": title})
     return 0
