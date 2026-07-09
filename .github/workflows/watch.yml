@@ -1,0 +1,45 @@
+name: Vigilar disponibilidad (DWC Terra)
+
+on:
+  schedule:
+    # Cada 15 minutos (en hora UTC). GitHub puede retrasar los cron unos minutos
+    # cuando hay mucha carga; ajusta la frecuencia a tu gusto.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: # permite lanzarlo manualmente desde la pestaña Actions
+
+permissions:
+  contents: write # necesario para guardar state.json cuando cambie el estado
+
+concurrency:
+  group: watch-dwc
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Comprobar disponibilidad
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python checker.py
+
+      - name: Guardar estado si cambió
+        run: |
+          if ! git diff --quiet state.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state.json
+            git commit -m "chore: actualizar estado de disponibilidad [skip ci]"
+            git push
+          else
+            echo "Sin cambios de estado."
+          fi
