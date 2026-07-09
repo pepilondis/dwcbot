@@ -98,18 +98,22 @@ def format_price(cents):
 
 
 def send_test_message():
-    """Envía un mensaje de prueba para comprobar que las notificaciones llegan."""
-    text = (
-        "🔔 <b>Mensaje de prueba de dwcbot</b>\n\n"
-        "Si estás leyendo esto, ¡las notificaciones funcionan! ✅\n"
-        "Te avisaré aquí en cuanto el reloj vuelva a estar disponible.\n\n"
+    """Envía NOTIFY_REPEAT mensajes de prueba (como el aviso real) para
+    comprobar que llegan y que el móvil suena lo suficiente."""
+    body = (
+        "🔔 <b>Prueba de dwcbot</b>\n\n"
+        "Si recibes esto, ¡las notificaciones funcionan! ✅\n"
+        "Cuando el reloj esté disponible te llegarán así, 5 seguidas.\n\n"
         f'👉 <a href="{PRODUCT_URL}">Ver el producto</a>'
     )
-    if send_telegram(text):
-        print("Mensaje de prueba enviado.")
-        return 0
-    print("No se pudo enviar el mensaje de prueba.", file=sys.stderr)
-    return 1
+    sent = 0
+    for i in range(1, NOTIFY_REPEAT + 1):
+        if send_telegram(f"({i}/{NOTIFY_REPEAT})\n{body}"):
+            sent += 1
+        if i < NOTIFY_REPEAT:
+            time.sleep(1)
+    print(f"Prueba: enviados {sent}/{NOTIFY_REPEAT} mensajes.")
+    return 0 if sent == NOTIFY_REPEAT else 1
 
 
 def main():
