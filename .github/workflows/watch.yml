@@ -2,10 +2,15 @@ name: Vigilar disponibilidad (DWC Terra)
 
 on:
   schedule:
-    # Cada 15 minutos (en hora UTC). GitHub puede retrasar los cron unos minutos
-    # cuando hay mucha carga; ajusta la frecuencia a tu gusto.
-    - cron: "*/15 * * * *"
+    # Cada 5 minutos (en hora UTC). Es el mínimo que permite GitHub; además puede
+    # retrasar los cron unos minutos cuando hay mucha carga.
+    - cron: "*/5 * * * *"
   workflow_dispatch: # permite lanzarlo manualmente desde la pestaña Actions
+    inputs:
+      test:
+        description: "Enviar un mensaje de prueba a Telegram (sin comprobar stock)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write # necesario para guardar state.json cuando cambie el estado
@@ -30,6 +35,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SEND_TEST: ${{ inputs.test }}
         run: python checker.py
 
       - name: Guardar estado si cambió

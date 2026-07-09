@@ -89,7 +89,25 @@ def format_price(cents):
         return "precio n/d"
 
 
+def send_test_message():
+    """Envía un mensaje de prueba para comprobar que las notificaciones llegan."""
+    text = (
+        "🔔 <b>Mensaje de prueba de dwcbot</b>\n\n"
+        "Si estás leyendo esto, ¡las notificaciones funcionan! ✅\n"
+        "Te avisaré aquí en cuanto el reloj vuelva a estar disponible.\n\n"
+        f'👉 <a href="{PRODUCT_URL}">Ver el producto</a>'
+    )
+    if send_telegram(text):
+        print("Mensaje de prueba enviado.")
+        return 0
+    print("No se pudo enviar el mensaje de prueba.", file=sys.stderr)
+    return 1
+
+
 def main():
+    if os.environ.get("SEND_TEST", "").strip().lower() in ("1", "true", "yes"):
+        return send_test_message()
+
     try:
         product = fetch_product()
     except Exception as e:  # noqa: BLE001 - queremos reintentar en la próxima ejecución
