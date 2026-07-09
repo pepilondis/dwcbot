@@ -41,6 +41,44 @@ encendido en tu ordenador.
 
 ---
 
+## Vigilancia del newsletter por correo (opcional)
+
+Además de la web, el bot puede vigilar un **buzón de correo** y avisarte por
+Telegram cuando llega un email (por ejemplo, el newsletter de Delhi Watch
+anunciando disponibilidad). Lo gestiona `email_checker.py` vía IMAP.
+
+Queda **inactivo** hasta que añadas los secretos `IMAP_USER` e `IMAP_PASSWORD`;
+sin ellos, el paso no hace nada (no falla).
+
+### Configuración (con una cuenta de Gmail DEDICADA — recomendado)
+
+1. **Crea una cuenta de Gmail nueva** usada solo para esto (no tu correo
+   personal). Así, aunque la contraseña se filtrara, no afecta a tu correo real.
+2. **Suscríbete al newsletter** de Delhi Watch Company con esa cuenta.
+3. En esa cuenta, activa la **verificación en 2 pasos**
+   (myaccount.google.com → Seguridad).
+4. Genera una **contraseña de aplicación**
+   (myaccount.google.com/apppasswords) — son 16 caracteres. Esta es la que usa
+   el bot, no tu contraseña normal.
+5. En GitHub → *Settings → Secrets and variables → Actions*, añade:
+
+   | Secreto         | Valor                                   |
+   | --------------- | --------------------------------------- |
+   | `IMAP_USER`     | la dirección del Gmail dedicado         |
+   | `IMAP_PASSWORD` | la contraseña de aplicación (16 letras) |
+
+A partir de ahí, cada 5 minutos el bot revisa el buzón (bandeja de entrada y
+spam) y te avisa por Telegram de cada correo nuevo con su remitente y asunto,
+marcándolo como leído para no repetir.
+
+### Ajustes opcionales (variables de entorno)
+
+- `EMAIL_FROM_FILTER`: si recibes ruido, ponlo a `delhiwatch` para avisar solo de
+  correos de ese remitente. Por defecto (vacío) avisa de cualquier correo nuevo.
+- `IMAP_MAILBOXES`: buzones a revisar (por defecto `INBOX,[Gmail]/Spam`).
+
+---
+
 ## Configuración (una sola vez)
 
 ### 1. Crea tu bot de Telegram y consigue el token
