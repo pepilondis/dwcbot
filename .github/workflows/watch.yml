@@ -1,13 +1,14 @@
 name: Vigilar disponibilidad (DWC Terra)
 
 on:
-  schedule:
-    # Cada 5 minutos (en hora UTC). Es el mínimo que permite GitHub; además puede
-    # retrasar los cron unos minutos cuando hay mucha carga.
-    - cron: "*/5 * * * *"
-    # Latido diario a las 08:00 UTC = 10:00 en España (horario de verano; en
-    # invierno llegará a las 09:00 porque el cron de GitHub va siempre en UTC).
-    - cron: "0 8 * * *"
+  # ── VIGILANCIA AUTOMÁTICA DESACTIVADA ──
+  # Para reactivarla, quita el comentario de las 4 líneas de abajo (schedule + los
+  # dos cron). Se dejó apagada a petición del usuario.
+  # schedule:
+  #   # Cada 5 minutos (en hora UTC). Es el mínimo que permite GitHub.
+  #   - cron: "*/5 * * * *"
+  #   # Latido diario a las 08:00 UTC = 10:00 en España (09:00 en invierno).
+  #   - cron: "0 8 * * *"
   workflow_dispatch: # permite lanzarlo manualmente desde la pestaña Actions
     inputs:
       test:
